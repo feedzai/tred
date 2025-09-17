@@ -1,0 +1,153 @@
+
+
+experiment_name : "RMA_ae_hpt"
+
+
+datasets :
+    rma_2 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_2_clean.csv"
+    rma_3 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_3_clean.csv"
+    rma_5 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_5_clean.csv"
+
+
+evaluation:
+    splits:
+        train_start : 1654041600 # 20220601
+        val_start : 1659312000 # 20220801
+        val_end : 1661990400 # 20220901
+
+
+methods :
+    autoencoder :
+        method_class : "tred.methods.Autoencoder"
+        method_confs :
+            batch_size: 32768
+            batches_per_epoch: 256
+            D_confs : None
+            E_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 19, 20, 3, 2]
+                dropout:
+                    optuna_type : float
+                    low : 0.0
+                    high : 0.5
+                    step : 0.1
+                input_dim_num : 52
+                layer_dims:
+                    optuna_type: "categorical"
+                    choices:
+                        - "64"
+                        - "128"
+                        - "256"
+                        - "64_32"
+                        - "128_32"
+                        - "128_64"
+                        - "256_64"
+                        - "256_128"
+                        - "128_64_32"
+                        - "256_128_64"
+                norm:
+                    optuna_type : "categorical"
+                    choices :
+                        - "none"
+                        - "batch_norm"
+                        - "layer_norm"
+                output_activation: "none"
+                residual: True
+            embedding_dim:
+                optuna_type: "categorical"
+                choices: [16, 32]
+            lr :
+                optuna_type : "float"
+                low : 0.00001
+                high : 0.003
+                log : True
+            max_epochs: 64
+            patience: 8
+            use_device: 'cpu'
+            verbose: True
+
+
+optuna:
+    direction: "maximize"
+    db_name: "hpt"
+    study_name: "RMA_ae_hpt"
+    tpe_startup_trials: 256
+
+
+schema :
+    categorical_cardinalities:
+        - 3
+        - 3
+        - 19
+        - 20
+        - 3
+        - 2
+    categorical_columns:
+        - pp_authorization_type
+        - pp_capture_mode
+        - pp_currency_code
+        - pp_merchant_mcc_category
+        - pp_payment_card_brand
+        - pp_payment_method_type
+    label_column : "fraud_label"
+    numerical_columns:
+        - amount_unified_currency
+        - log_amount
+        - ratio_merchant_id_max_amount_1_hour_merchant_id_max_amount_1_month
+        - payment_card_id_timeSincePrev_event_occurred_at_1_month
+        - payment_card_id_sum_amount_1_day
+        - ratio_merchant_id_countDistinct_payment_card_bin_1_hour_merchant_id_countDistinct_payment_card_bin_1_day
+        - merchant_id_max_amount_1_month
+        - payment_card_id_sum_amount_1_hour
+        - merchant_id_countDistinct_terminal_id_1_day
+        - merchant_id_stdDev_amount_1_month
+        - payment_card_id_stdDev_log_amount_1_hour
+        - merchant_id_stdDev_log_amount_1_month
+        - merchant_id_stdDev_log_amount_1_week
+        - payment_card_id_avg_amount_1_day
+        - payment_card_id_count_1_day
+        - payment_card_id_max_amount_1_day
+        - merchant_id_sum_amount_1_month
+        - ratio_payment_card_id_count_1_week_payment_card_id_count_1_month
+        - payment_card_id_count_1_hour
+        - merchant_id_max_amount_1_week
+        - payment_card_id_count_1_month
+        - ratio_payment_card_id_avg_amount_1_hour_payment_card_id_avg_amount_1_month
+        - payment_card_id_vel_1_month
+        - payment_card_id_stdDev_log_amount_1_month
+        - merchant_id_avg_log_amount_1_month
+        - merchant_id_sum_amount_1_week
+        - payment_card_id_avg_log_amount_1_day
+        - payment_card_id_countDistinct_device_ip_1_day
+        - payment_card_id_max_amount_1_hour
+        - payment_card_id_avg_log_amount_1_month
+        - payment_card_id_max_amount_1_month
+        - merchant_id_countDistinct_payment_card_country_code_1_day
+        - merchant_id_countDistinct_merchant_mcc_1_day
+        - ratio_payment_card_id_sum_amount_1_week_payment_card_id_sum_amount_1_month
+        - payment_card_id_countDistinct_merchant_id_1_day
+        - merchant_id_stdDev_log_amount_1_day
+        - ratio_payment_card_id_count_1_hour_payment_card_id_count_1_month
+        - merchant_id_countDistinct_payment_card_bin_1_day
+        - merchant_id_avg_amount_1_month
+        - payment_card_id_countDistinct_billing_email_1_day
+        - payment_card_id_countDistinct_merchant_mcc_1_day
+        - payment_card_id_sum_amount_1_month
+        - payment_card_id_avg_amount_1_month
+        - payment_card_id_stdDev_amount_1_month
+        - payment_card_id_avg_log_amount_1_week
+        - payment_card_id_timeSincePrev_event_occurred_at_1_day
+        - payment_card_id_stdDev_amount_1_hour
+        - payment_card_id_timeSincePrev_event_occurred_at_1_hour
+        - merchant_id_countDistinct_terminal_id_1_hour
+        - payment_card_id_stdDev_amount_1_day
+        - payment_card_id_vel_1_day
+        - payment_card_id_timeSincePrev_event_occurred_at_1_week
+    standardize_numericals: True
+    time_column : "event_occurred_at"

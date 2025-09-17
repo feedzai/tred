@@ -1,0 +1,349 @@
+
+
+experiment_name : "complete_pipeline"
+
+
+datasets :
+    BAF :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/BAF/Base_processed.csv"
+
+
+
+domain_sampler:
+    sampler_class : "tred.domain_sampler.ClusterSampler"
+    sampler_confs :
+        distance_function : "tred.utils.csv_distance"
+        decay_factor: 1.0
+        min_labels: 800
+    sample_confs :
+        n_domains: 4
+        selected_datasets: ["BAF"]
+
+
+
+evaluation_over_time :
+    metrics :
+        recall_at_0.005_fpr :
+            metric : "recall_at_fpr"
+            config :
+                max_fpr : 0.005
+        recall_at_0.01_fpr :
+            metric : "recall_at_fpr"
+            config :
+                max_fpr : 0.01
+        partial_roc_auc_0.01 :
+            metric : "roc_auc_score"
+            config :
+                max_fpr : 0.01
+        roc_auc :
+            metric : "roc_auc_score"
+    splits :
+        source_start_time : 1643673600 # 20220201
+        eval_start_time : 1651363200 # 20220501
+        eval_end_time : 1664582400 # 20221001
+        eval_time_step : 2678400 # 1 month ~ 31*24*60*60 seconds
+        label_delay : 2678400 # 1 month ~ 31*24*60*60 seconds
+    target_domain : "BAF_0"
+
+
+
+methods :
+    baseline_all :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: True
+            include_target: True
+            model_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    baseline_source :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: True
+            include_target: False
+            model_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    baseline_target :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: False
+            include_target: True
+            model_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    dann :
+        method_class : "tred.methods.DANN"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [8, 4]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.1
+    kmm :
+        method_class : "tred.methods.KMM"
+        method_confs :
+            model_confs :
+                boosting_type: "gbdt"
+                num_leaves: 31
+                max_depth: -1
+                learning_rate: 0.1
+                n_estimators: 100
+            positive_ratio : 0.1
+            verbose : True
+            xs_size : 100000
+            xt_size : 10000
+    man :
+        method_class : "tred.methods.MAN"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 32
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [8, 4]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            d_iter: 5
+            Ep_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            Es_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.1
+    mme :
+        method_class : "tred.methods.MME"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.1
+    mtae :
+        method_class : "tred.methods.MTAE"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.1
+                input_dim_num : 16
+                layer_dims: [16, 64, 45]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout: 0.1
+                input_dim_num : 24
+                layer_dims: [64, 16]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            max_pretrain_epochs: 128
+
+
+
+methods_common_configs:
+    batch_size: 1024
+    batches_per_epoch: 128
+    lr : 0.00005
+    max_epochs: 128
+    patience: 8
+    positive_ratio: 0.1
+    use_device: 'cuda:2'
+    validation_metric:
+        metric: "recall_at_fpr"
+        config:
+            max_fpr: 0.01
+    verbose: True
+
+
+
+pretrained:
+    dann:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/evaluation_over_time/AE_0076_E.pt"
+    man:
+        Es: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/evaluation_over_time/AE_0076_E.pt"
+    mme:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/evaluation_over_time/AE_0076_E.pt"
+    mtae:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/evaluation_over_time/AE_0076_E.pt"
+
+
+
+transformations :
+    change_of_currency:
+        columns: ["intended_balcon_amount", "proposed_credit_limit"]
+        operation: "scale_numericals"
+        time_dependency: "const"
+        scale_factor: [1, 5]
+
+    inflation:
+        columns: ["intended_balcon_amount", "proposed_credit_limit"]
+        operation: "scale_numericals"
+        time_dependency: "drift"
+        scale_factor: [1, 1.1]
+
+    scale_volume:
+        columns: ["velocity_6h", "velocity_24h", "velocity_4w"]
+        operation: "scale_numericals"
+        time_dependency: "cycle"
+        period: 2678400 # 31*24*60*60
+        scale_factor: [1,2]
+
+    income:
+        columns: ["income"]
+        operation: "attract_numericals"
+        time_dependency: "const"
+        anchor_value: [0.1, 0.9]
+        anchor_weight: [0.0, 0.3]
+
+    age:
+        columns: ["customer_age"]
+        operation: "attract_numericals"
+        time_dependency: "drift"
+        anchor_value: [10, 90]
+        anchor_weight: [0.0, 0.3]
+
+    demographic_shift_0:
+        columns: ["employment_status"]
+        operation: "resample_categorical"
+        time_dependency: "const"
+        change_factor: [0.0,0.3]
+
+    demographic_shift_1:
+        columns: ["housing_status"]
+        operation: "resample_categorical"
+        time_dependency: "drift"
+        change_factor: [0.0,0.3]
+
+
+
+schema :
+    categorical_cardinalities:
+        - 5
+        - 7
+        - 7
+        - 2
+    categorical_columns:
+        - payment_type
+        - employment_status
+        - housing_status
+        - source
+    label_column : "fraud_bool"
+    numerical_columns:
+        - income
+        - name_email_similarity
+        - prev_address_months_count
+        - current_address_months_count
+        - customer_age
+        - days_since_request
+        - intended_balcon_amount
+        - zip_count_4w
+        - velocity_6h
+        - velocity_24h
+        - velocity_4w
+        - bank_branch_count_8w
+        - date_of_birth_distinct_emails_4w
+        - credit_risk_score
+        - email_is_free
+        - phone_home_valid
+        - phone_mobile_valid
+        - bank_months_count
+        - has_other_cards
+        - proposed_credit_limit
+        - foreign_request
+        - session_length_in_minutes
+        - keep_alive_session
+        - device_distinct_emails_8w
+    standardize_numericals: True
+    time_column : "timestamp"

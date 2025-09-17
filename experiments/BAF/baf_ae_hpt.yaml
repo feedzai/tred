@@ -1,0 +1,119 @@
+
+
+experiment_name : "BAF_ae_hpt"
+
+
+datasets :
+    BAF :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/BAF/Base_processed.csv"
+
+
+evaluation:
+    splits:
+        train_start : 1643673600 # 20220201
+        val_start : 1648771200 # 20220401
+        val_end : 1651363200 # 20220501
+
+
+methods :
+    autoencoder :
+        method_class : "tred.methods.Autoencoder"
+        method_confs :
+            batch_size: 1024
+            batches_per_epoch: 512
+            D_confs : None
+            E_confs :
+                activation: "relu"
+                cardinalities : [5,7,7,2]
+                dropout:
+                    optuna_type : float
+                    low : 0.0
+                    high : 0.5
+                    step : 0.1
+                input_dim_num : 24
+                layer_dims:
+                    optuna_type: "categorical"
+                    choices:
+                        - "64"
+                        - "128"
+                        - "256"
+                        - "64_32"
+                        - "128_32"
+                        - "128_64"
+                        - "256_64"
+                        - "256_128"
+                        - "128_64_32"
+                        - "256_128_64"
+                norm:
+                    optuna_type : "categorical"
+                    choices :
+                        - "none"
+                        - "batch_norm"
+                        - "layer_norm"
+                output_activation: "none"
+                residual:
+                    optuna_type : "categorical"
+                    choices :
+                        - True
+                        - False
+            embedding_dim:
+                optuna_type: "categorical"
+                choices: [8, 16, 32]
+            lr :
+                optuna_type : "float"
+                low : 0.00001
+                high : 0.003
+                log : True
+            max_epochs: 128
+            patience: 8
+            use_device: 'cuda:2'
+            verbose: True
+
+
+optuna:
+    direction: "maximize"
+    db_name: "hpt"
+    study_name: "autoencoder_hpt_1"
+    tpe_startup_trials: 256
+
+
+schema :
+    categorical_cardinalities:
+        - 5
+        - 7
+        - 7
+        - 2
+    categorical_columns:
+        - payment_type
+        - employment_status
+        - housing_status
+        - source
+    label_column : "fraud_bool"
+    numerical_columns:
+        - income
+        - name_email_similarity
+        - prev_address_months_count
+        - current_address_months_count
+        - customer_age
+        - days_since_request
+        - intended_balcon_amount
+        - zip_count_4w
+        - velocity_6h
+        - velocity_24h
+        - velocity_4w
+        - bank_branch_count_8w
+        - date_of_birth_distinct_emails_4w
+        - credit_risk_score
+        - email_is_free
+        - phone_home_valid
+        - phone_mobile_valid
+        - bank_months_count
+        - has_other_cards
+        - proposed_credit_limit
+        - foreign_request
+        - session_length_in_minutes
+        - keep_alive_session
+        - device_distinct_emails_8w
+    standardize_numericals: True
+    time_column : "timestamp"

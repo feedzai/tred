@@ -1,0 +1,344 @@
+
+
+experiment_name : "RMA_eot"
+
+
+datasets :
+    rma_2 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_2_v2_clean.csv"
+    rma_3 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_3_v2_clean.csv"
+    rma_5 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_5_v2_clean.csv"
+    rma_7 :
+        dataset_class : "tred.datasets.CSVDataset"
+        path : "~/TrED/tred/datasets/RMA/sample_7_v2_clean.csv"
+
+
+
+domain_sampler: {}
+
+
+
+evaluation_over_time :
+    metrics :
+        recall_at_0.005_fpr :
+            metric : "recall_at_fpr"
+            config :
+                max_fpr : 0.005
+        recall_at_0.01_fpr :
+            metric : "recall_at_fpr"
+            config :
+                max_fpr : 0.01
+        partial_roc_auc_0.01 :
+            metric : "roc_auc_score"
+            config :
+                max_fpr : 0.01
+        roc_auc :
+            metric : "roc_auc_score"
+    splits :
+        dataset_start : 1654387200 # 20220605
+        dataset_end : 1679184000 # 20230319
+        t_unit : 604800 # 1 week = 7*24*60*60 s
+        minimum_source_units : 16
+        label_delay_units : 4
+        evaluation_units : 2
+        n_evaluations : 9
+    target_domain : "rma_7"
+
+
+
+methods :
+    baseline_all :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: True
+            include_target: True
+            model_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    baseline_source :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: True
+            include_target: False
+            model_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    baseline_target :
+        method_class : "tred.methods.CentralMLP"
+        method_confs :
+            include_source: False
+            include_target: True
+            model_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32, 8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+    dann :
+        method_class : "tred.methods.DANN"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [8, 4]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.1
+    kmm :
+        method_class : "tred.methods.KMM"
+        method_confs :
+            model_confs :
+                boosting_type: "gbdt"
+                num_leaves: 31
+                max_depth: -1
+                learning_rate: 0.1
+                n_estimators: 100
+            positive_ratio : 0.1
+            verbose : True
+            xs_size : 100000
+            xt_size : 10000
+    man :
+        method_class : "tred.methods.MAN"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 64
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [8, 4]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            d_iter: 5
+            Ep_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            Es_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.05
+    mme :
+        method_class : "tred.methods.MME"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities : [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            lambda_adapt: 0.1
+    mtae :
+        method_class : "tred.methods.MTAE"
+        method_confs :
+            C_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [8, 1]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            D_confs :
+                activation: "relu"
+                cardinalities : []
+                dropout: 0.0
+                input_dim_num : 32
+                layer_dims: [256, 103]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            E_confs :
+                activation: "relu"
+                cardinalities :  [3, 3, 20, 20, 3, 2]
+                dropout: 0.0
+                input_dim_num : 52
+                layer_dims: [256, 32]
+                norm: "layer_norm"
+                output_activation: "none"
+                residual: True
+            max_pretrain_epochs: 128
+
+
+
+methods_common_configs:
+    batch_size: 512
+    batches_per_epoch: 512
+    lr : 0.0003
+    max_epochs: 64
+    patience: 8
+    positive_ratio: 0.1
+    use_device: 'cpu'
+    validation_metric:
+        metric: "recall_at_fpr"
+        config:
+            max_fpr: 0.01
+    verbose: True
+
+
+
+pretrained:
+    dann_0.03:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+    dann_0.1:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+    dann_0.3:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+    man:
+        Es: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+    mme:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+    mtae:
+        E: "/mnt/home/ricardo.ribeiro/TrED/tred/experiments/RMA_ae_hpt/model_states/AE_0199_E.pt"
+
+
+
+transformations : {}
+
+
+
+schema :
+    categorical_cardinalities:
+        - 3
+        - 3
+        - 20
+        - 20
+        - 3
+        - 2
+    categorical_columns:
+        - pp_authorization_type
+        - pp_capture_mode
+        - pp_currency_code
+        - pp_merchant_mcc_category
+        - pp_payment_card_brand
+        - pp_payment_method_type
+    label_column : "fraud_label"
+    numerical_columns:
+        - amount_unified_currency
+        - log_amount
+        - ratio_merchant_id_max_amount_1_hour_merchant_id_max_amount_1_month
+        - payment_card_id_timeSincePrev_event_occurred_at_1_month
+        - payment_card_id_sum_amount_1_day
+        - ratio_merchant_id_countDistinct_payment_card_bin_1_hour_merchant_id_countDistinct_payment_card_bin_1_day
+        - merchant_id_max_amount_1_month
+        - payment_card_id_sum_amount_1_hour
+        - merchant_id_countDistinct_terminal_id_1_day
+        - merchant_id_stdDev_amount_1_month
+        - payment_card_id_stdDev_log_amount_1_hour
+        - merchant_id_stdDev_log_amount_1_month
+        - merchant_id_stdDev_log_amount_1_week
+        - payment_card_id_avg_amount_1_day
+        - payment_card_id_count_1_day
+        - payment_card_id_max_amount_1_day
+        - merchant_id_sum_amount_1_month
+        - ratio_payment_card_id_count_1_week_payment_card_id_count_1_month
+        - payment_card_id_count_1_hour
+        - merchant_id_max_amount_1_week
+        - payment_card_id_count_1_month
+        - ratio_payment_card_id_avg_amount_1_hour_payment_card_id_avg_amount_1_month
+        - payment_card_id_vel_1_month
+        - payment_card_id_stdDev_log_amount_1_month
+        - merchant_id_avg_log_amount_1_month
+        - merchant_id_sum_amount_1_week
+        - payment_card_id_avg_log_amount_1_day
+        - payment_card_id_countDistinct_device_ip_1_day
+        - payment_card_id_max_amount_1_hour
+        - payment_card_id_avg_log_amount_1_month
+        - payment_card_id_max_amount_1_month
+        - merchant_id_countDistinct_payment_card_country_code_1_day
+        - merchant_id_countDistinct_merchant_mcc_1_day
+        - ratio_payment_card_id_sum_amount_1_week_payment_card_id_sum_amount_1_month
+        - payment_card_id_countDistinct_merchant_id_1_day
+        - merchant_id_stdDev_log_amount_1_day
+        - ratio_payment_card_id_count_1_hour_payment_card_id_count_1_month
+        - merchant_id_countDistinct_payment_card_bin_1_day
+        - merchant_id_avg_amount_1_month
+        - payment_card_id_countDistinct_billing_email_1_day
+        - payment_card_id_countDistinct_merchant_mcc_1_day
+        - payment_card_id_sum_amount_1_month
+        - payment_card_id_avg_amount_1_month
+        - payment_card_id_stdDev_amount_1_month
+        - payment_card_id_avg_log_amount_1_week
+        - payment_card_id_timeSincePrev_event_occurred_at_1_day
+        - payment_card_id_stdDev_amount_1_hour
+        - payment_card_id_timeSincePrev_event_occurred_at_1_hour
+        - merchant_id_countDistinct_terminal_id_1_hour
+        - payment_card_id_stdDev_amount_1_day
+        - payment_card_id_vel_1_day
+        - payment_card_id_timeSincePrev_event_occurred_at_1_week
+    standardize_numericals: True
+    time_column : "event_occurred_at"
